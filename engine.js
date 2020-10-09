@@ -1,3 +1,4 @@
+const engine = require('engine.io');
 const groups = require('./groups');
 
 class Room {
@@ -40,7 +41,7 @@ class Engine {
 
         for (const group of groups) {
             this.players[group] = {};
-            this.rooms[group] = [];
+            this.rooms[group] = [new Room('lobby')];
         }
     }
 
@@ -66,6 +67,7 @@ class Engine {
         this.checkGroup(group);
 
         this.players[group][id] = new Player(id);
+        this.rooms[group][0].addPlayer(id);
     }
 
     removePlayer(group, id) {
@@ -73,9 +75,27 @@ class Engine {
 
         delete this.players[group][id];
 
-        for (const room of rooms) {
+        for (const room of this.rooms[group]) {
             room.removePlayer(id);
         }
+    }
+
+    movePlayer(group, id, roomName) {
+        this.checkGroup(group);
+
+        const current = this.getPlayerRoom(group, id);
+
+        const from = this.rooms[group].find(room => room.name === current);
+        const to = this.rooms[group].find(room => room.name === roomName);
+
+        if (!from || !to) {
+            throw new Error('room bestaat niet');
+        }
+
+        from.removePlayer(id);
+        to.addPlayer(id);
+
+        return current;
     }
 
     getPlayers(group, roomName) {
@@ -84,7 +104,7 @@ class Engine {
         return this.rooms[group]
             .find(room => room.name === roomName)
             .players
-            .map(playerId => this.players[group].find(player => player.id === playerId));
+            .map(id => this.players[group][id].name);
     }
 
     getPlayerRoom(group, id) {
@@ -99,7 +119,9 @@ class Engine {
         const player = this.players[group][id];
 
         return {
+            type: 'player info',
             name: player.name,
+            room: this.getPlayerRoom(group, id),
             items: player.items,
         };
     }
@@ -110,8 +132,9 @@ class Engine {
         const room = this.rooms[group].find(room => room.name === roomName);
 
         return {
+            type: 'room info',
             name: room.name,
-            players: room.players.map(playerId => this.players[group].find(player => player.id === playerId)),
+            players: this.getPlayers(group, roomName),
             items: room.items,
             connects: room.connects,
         };
@@ -126,7 +149,7 @@ class Engine {
     newRoom(group, name) {
         this.checkGroup(group);
 
-        if (!this.rooms[group][name]) {
+        if (!this.rooms[group].includes(name)) {
             this.rooms[group].push(new Room(name));
         }
     }
@@ -142,6 +165,37 @@ class Engine {
         }
         if (!roomB.connects.includes(roomA.name)) {
             roomB.connects.push(roomA.name);
+        }
+    }
+
+    addItem(group, roomName, item) {
+        this.checkGroup(group);
+
+        const room = this.rooms[group].find(room => room.name === roomName);
+
+        room.items.push(item);
+    }
+
+    takeItem(group, roomName, player, item) {
+        this.checkGroup(group);
+
+        const room = this.rooms[group].find(room => room.name === roomName);
+
+        if (room.items.includes(item)) {
+            this.players[group][player].items.push(item);
+            const idx = room.items.indexOf(item);
+            room.items.splice(idx, 1);
+        }
+    }
+
+    leaveItem(group, roomName, player, item) {
+        this.checkGroup(group);
+
+        if (this.players[group][player].items.includes(item)) {
+            const room = this.rooms[group].find(room => room.name === roomName);
+            room.items.push(item);
+            const idx = this.players[group][player].items.indexOf(item);
+            this.players[group][player].items.splice(idx, 1);
         }
     }
 }
