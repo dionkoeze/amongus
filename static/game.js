@@ -196,6 +196,7 @@ socket.on('room info', function(room) {
     }
 
     // dit voegt alle items toe (denk aan de foreach loop in Java)
+    // in plaats van de items in tekst weer te geven kan je natuurlijk ook plaatjes gebruiken!
     for (const item of room.items) {
         // maak een nieuw list item
         const newElement = document.createElement('li');
@@ -268,6 +269,7 @@ socket.on('player info', function(player) {
     playerItems.innerHTML = '';
 
     // dit voegt alle items toe (denk aan de foreach loop in Java)
+    // in plaats van de items in tekst weer te geven kan je natuurlijk ook plaatjes gebruiken!
     for (const item of player.items) {
         // maak een nieuw list item
         const newElement = document.createElement('li');
