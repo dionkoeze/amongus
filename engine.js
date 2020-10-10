@@ -44,7 +44,6 @@ class Player {
     }
 
     makeImpostor() {
-        console.log(`making ${this.name} impostor`);
         this.isImpostor = true;
         this.impostorSince = new Date();
     }
@@ -56,7 +55,6 @@ class Player {
 
         const milliseconds = end.getTime() - this.impostorSince.getTime();
         const time = Math.floor(milliseconds / 60000) + 1;
-        console.log(`score: ${milliseconds} ${time} ${MAXSCORE / time}`)
         return Math.max(Math.floor(MAXSCORE / time), MINSCORE);
     }
 }
@@ -291,7 +289,6 @@ class Engine {
 
         for (const id in this.players[group]) {
             const player = this.players[group][id];
-            console.log(`seeing if ${player.name} is impostor`)
             if (player.isImpostor) {
                 impostor = player;
             }
@@ -328,10 +325,6 @@ class Engine {
 
         const impostor = this.getImpostor(group);
         const vote = this.getTopVote(group);
-
-        console.log(impostor)
-        console.log(vote)
-        console.log(this.started[group])
 
         if (this.started[group] && impostor && impostor.name === vote.name && vote.count > MAJORITY * this.getPlayerCount(group)) {
             state.score = impostor.stopImpostor();
