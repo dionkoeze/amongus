@@ -10,30 +10,47 @@ const groups = require('./groups');
 
 app.use(express.static('static'));
 
+function handleImpostorState(group, ns, state) {
+    if (state.notEnoughPlayers) {
+        ns.emit('too few players', engine.getPlayerCount(group));
+    }
+    if (state.gameEnded) {
+        ns.emit('game ended', {
+            impostor: state.impostor,
+            score: state.score,
+        });
+    }
+    if (state.newImpostor) {
+        ns.emit('new impostor');
+        for (const id in ns.sockets) {
+            ns.to(id).emit('player info', engine.getPlayerInfo(group, id));
+        }
+    }
+}
+
 for (const group of groups) {
     const ns = io.of(`/${group}`);
     
     ns.on('connection', (socket) => {
-        console.log(`a user connected ${group} ${socket.id}`);
         try {
             engine.addPlayer(group, socket.id);
             socket.join('lobby');
-            // console.log(engine.getRoomInfo(group, 'lobby'));
+            handleImpostorState(group, ns, engine.checkImpostorState(group));
             ns.to('lobby').emit('room info', engine.getRoomInfo(group, 'lobby'));
-            // console.log(engine.getPlayerInfo(group, socket.id));
             ns.to(socket.id).emit('player info', engine.getPlayerInfo(group, socket.id));
+            ns.emit('score info', engine.getScoreInfo(group));
         } catch (e) {
             console.error(e);
         }
     
         socket.on('disconnect', () => {
-            console.log(`user disconnected ${group} ${socket.id}`);
             try {
                 const room = engine.getPlayerRoom(group, socket.id);
                 engine.removePlayer(group, socket.id);
                 socket.leave(room);
-                console.log(`leaving ${room}`);
+                handleImpostorState(group, ns, engine.checkImpostorState(group));
                 ns.to(room).emit('room info', engine.getRoomInfo(group, room));
+                ns.emit('score info', engine.getScoreInfo(group));
             } catch (e) {
                 console.error(e);
             }
@@ -45,13 +62,13 @@ for (const group of groups) {
                 const room = engine.getPlayerRoom(group, socket.id);
                 ns.to(room).emit('room info', engine.getRoomInfo(group, room));
                 ns.to(socket.id).emit('player info', engine.getPlayerInfo(group, socket.id));
+                ns.emit('score info', engine.getScoreInfo(group));
             } catch (e) {
                 console.error(e);
             }
         });
     
         socket.on('global chat message', (msg) => {
-            console.log(`global msg ${msg}`);
             try {
                 ns.emit('chat message', {
                     name: engine.getName(group, socket.id),
@@ -64,7 +81,6 @@ for (const group of groups) {
         });
 
         socket.on('room chat message', (msg) => {
-            console.log(`room msg ${msg}`);
             try {
                 ns.to(engine.getPlayerRoom(group, socket.id)).emit('chat message', {
                     name: engine.getName(group, socket.id),
@@ -86,7 +102,6 @@ for (const group of groups) {
 
         socket.on('link rooms', (data) => {
             try {
-                console.log(`linking ${data.first} and ${data.second}`)
                 engine.linkRooms(group, data.first, data.second);
                 ns.to(data.first).emit('room info', engine.getRoomInfo(group, data.first));
                 ns.to(data.second).emit('room info', engine.getRoomInfo(group, data.second));
@@ -131,8 +146,28 @@ for (const group of groups) {
 
         socket.on('new item', (data) => {
             try {
-                engine.addItem(group, data.room, data.item)
+                engine.addItem(group, data.room, data.item);
                 ns.to(data.room).emit('room info', engine.getRoomInfo(group, data.room));
+            } catch (e) {
+                console.error(e);
+            }
+        });
+
+        socket.on('new start item', (data) => {
+            try {
+                engine.addStartItem(group, data.room, data.item);
+                ns.to(data.room).emit('room info', engine.getRoomInfo(group, data.room));
+            } catch (e) {
+                console.error(e);
+            }
+        });
+
+        socket.on('my vote', (votedPlayer) => {
+            try {
+                engine.playerVote(group, socket.id, votedPlayer);
+                handleImpostorState(group, ns, engine.checkImpostorState(group));
+                ns.to(socket.id).emit('player info', engine.getPlayerInfo(group, socket.id));
+                ns.emit('score info', engine.getScoreInfo(group));
             } catch (e) {
                 console.error(e);
             }

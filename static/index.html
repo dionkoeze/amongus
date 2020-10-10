@@ -8,43 +8,80 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.1/socket.io.js"></script>
 </head>
 <body>
-    <h1>Schrijf hier je eigen spel!</h1>
-    <p>Dit html bestand is de start van jullie spel! 
-        Je vindt wat instructies en een voorbeeld van hoe je met 
-        de backend (de server) van het spel kan praten.</p>
+    <h1>Maak je eigen Among Us!</h1>
+    <p>Deze html pagina met wat css en javascript is een simpel voorbeeldje van hoe je de backend kan aanspreken om jullie spel te maken. Style de pagina zo fancy als je wil! Bedenk zelf een game theme! Wat gaat het doel van je spel worden en wat moet de impostor voor elkaar krijgen?</p>
+
+    <p>Misschien weet je wel hoe Among Us wordt gespeeld. Het spel dat je gaat maken is er wel op gebaseerd, maar er zijn andere mechanics die je kan gebruiken. De mechanics die je tot je beschikking hebt zijn:</p>
+    <ul>
+        <li>Het speel wordt continu door gespeeld. Het spel wordt gereset als er geen spelers zijn (als je alle tabbladen met je spel sluit, kan even duren)</li>
+        <li>De wereld bestaat uit rooms en de 'lobby' bestaat altijd</li>
+        <li>Je kan kamers aanmaken en ze aan elkaar linken (dubbel aanmaken of linken is geen probleem)</li>
+        <li>Spelers bevinden zich in een room en kunnen naar een andere room gaan (iedereen begint in de lobby)</li>
+        <li>Items kunnen in kamers liggen en in de inventory van spelers zitten</li>
+        <li>Iedere speler kan altijd voten wie de Impostor is, maar iedere vote kost 1 punt</li>
+        <li>Als een meerderheid van de spelers op de echte Impostor stemt is de Impostor ontdekt</li>
+        <li>Hoe sneller de Impostor ontdekt wordt hoe meer punten iedereen verdient</li>
+        <li>Als de Impostor gevonden is wordt er een nieuwe aangewezen</li>
+        <li>Er wordt pas een Impostor aangewezen als er minimaal 4 spelers zijn</li>
+    </ul>
+
     <form id="userName" name="userName" action="">
         <p>Wat is je naam?</p>
         <input id="name" autocomplete="off" /><button>Send name</button>
     </form>
 
-    <form id="addRoom" name="addRoom" action="">
-        <p>Voeg een room toe</p>
-        <input id="room" autocomplete="off" /><button>Create room</button>
-    </form>
+    <div id="playerInfo">
+        <h3>Player info</h3>
+        <p>Naam: <span id="playerName"></span></p>
+        <p>Score: <span id="playerScore"></span></p>
+        <p>Current vote: <span id="playerVote"></span></p>
+        <p id="impostor"></p>
+        <div>
+            <p>Items (click to place item in room):</p>
+            <ul id="playerItems"></ul>
+        </div>
+    </div>
 
-    <form id="linkRoom" name="linkRoom" action="">
-        <p>Link twee rooms</p>
-        <input id="roomA" autocomplete="off" />
-        <input id="roomB" autocomplete="off" />
-        <button>Link rooms</button>
-    </form>
+    <div id="gameMessage">
+        <h3>Last game messages:</h3>
+        <ol>
+            <li id="gameMessage1"></li>
+            <li id="gameMessage2"></li>
+            <li id="gameMessage3"></li>
+            <li id="gameMessage4"></li>
+        </ol>
+    </div>
 
-    <form id="moveTo" name="moveTo" action="">
-        <p>Ga naar een andere kamer</p>
-        <input id="moveRoom" autocomplete="off" /><button>Move</button>
-    </form>
+    <div id="scoreBoard">
+        <h3>Score Board</h3>
+        <ol id="topThree"></ol>
+    </div>
 
-    <form id="addItem" name="addItem" action="">
-        <p>Voeg een item toe</p>
-        <input id="addedItem" autocomplete="off" />
-        <input id="itemRoom" autocomplete="off" />
-        <button>Add item</button>
-    </form>
+    <div id="roomInfo">
+        <h3>Room info</h3>
+        <p>Naam: <span id="roomName"></span></p>
+        <div>
+            <p>Players (click to vote, costs 1 point):</p>
+            <ul id="roomPlayers"></ul>
+        </div>
+        <div>
+            <p>Items (click to pick up):</p>
+            <ul id="roomItems"></ul>
+        </div>
+        <div>
+            <p>Adjacent rooms (click to go there):</p>
+            <ul id="adjacentRooms"></ul>
+        </div>
+    </div>
 
     <ul id="messages"></ul>
-    <form name="userInput" action="">
-        <input id="text" autocomplete="off" /><button>Send</button>
+    <form name="userRoomInput" action="">
+        <input id="roomText" autocomplete="off" /><button>Send to room</button>
     </form>
+    <form name="userGlobalInput" action="">
+        <input id="globalText" autocomplete="off" /><button>Send to everyone</button>
+    </form>
+
     <script src="game.js"></script>
 </body>
 </html>
