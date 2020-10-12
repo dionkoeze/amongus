@@ -170,6 +170,29 @@ class Engine {
         };
     }
 
+    getVoteInfo(group) {
+        this.checkGroup(group);
+
+        const votes = [];
+
+        for (const id in this.players[group]) {
+            const player = this.players[group][id];
+            const vote = votes.find(vote => vote.name === player.vote);
+            if (vote) {
+                vote.count += 1;
+            } else {
+                votes.push({
+                    name: player.vote,
+                    count: 1,
+                });
+            }
+        }
+
+        votes.sort((a, b) => b.count - a.count);
+
+        return votes;
+    }
+
     getRoomInfo(group, roomName) {
         this.checkGroup(group);
 
@@ -244,6 +267,12 @@ class Engine {
         if (this.playerCount[group] == 1) {
             this.addItem(group, roomName, item);
         }
+    }
+
+    addPlayerItem(group, id, item) {
+        this.checkGroup(group);
+
+        this.players[group][id].items.push(item);
     }
 
     takeItem(group, roomName, player, item) {

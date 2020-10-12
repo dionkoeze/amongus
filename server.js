@@ -162,12 +162,22 @@ for (const group of groups) {
             }
         });
 
+        socket.on('new player item', (item) => {
+            try {
+                engine.addPlayerItem(group, socket.id, item);
+                ns.to(socket.id).emit('player info', engine.getPlayerInfo(group, socket.id));
+            } catch (e) {
+                console.error(e);
+            }
+        });
+
         socket.on('my vote', (votedPlayer) => {
             try {
                 engine.playerVote(group, socket.id, votedPlayer);
                 handleImpostorState(group, ns, engine.checkImpostorState(group));
                 ns.to(socket.id).emit('player info', engine.getPlayerInfo(group, socket.id));
                 ns.emit('score info', engine.getScoreInfo(group));
+                ns.emit('vote info', engine.getVoteInfo(group));
             } catch (e) {
                 console.error(e);
             }
