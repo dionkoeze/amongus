@@ -2,12 +2,14 @@ const express = require('express');
 const app = express();
 const http = require('http').createServer(app);
 const io = require('socket.io')(http);
+const cors = require('cors');
 
 const Engine = require('./engine');
 const engine = new Engine;
 
 const groups = require('./groups');
 
+app.use(cors());
 app.use(express.json());
 
 app.delete('/:group', (req, res) => {
@@ -215,6 +217,24 @@ for (const group of groups) {
         socket.on('new player item', (item) => {
             try {
                 engine.addPlayerItem(group, socket.id, item);
+                ns.to(socket.id).emit('player info', engine.getPlayerInfo(group, socket.id));
+            } catch (e) {
+                console.error(e);
+            }
+        });
+
+        socket.on('remove room item', (data) => {
+            try {
+                engine.removeRoomItem(group, data.room, data.item);
+                ns.to(data.room).emit('room info', engine.getRoomInfo(group, data.room));
+            } catch (e) {
+                console.error(e);
+            }
+        });
+
+        socket.on('remove player item', (item) => {
+            try {
+                engine.removePlayerItem(group, socket.id, item);
                 ns.to(socket.id).emit('player info', engine.getPlayerInfo(group, socket.id));
             } catch (e) {
                 console.error(e);

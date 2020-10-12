@@ -292,6 +292,28 @@ class Engine {
         this.players[group][id].items.push(item);
     }
 
+    removeRoomItem(group, roomName, item) {
+        this.checkGroup(group);
+
+        const room = this.rooms[group].find(room => room.name === roomName);
+
+        const idx = room.items.indexOf(item);
+
+        if (idx >= 0) {
+            room.items.splice(idx, 1);
+        }
+    }
+
+    removePlayerItem(group, playerId, item) {
+        this.checkGroup(group);
+
+        const idx = this.players[group][playerId].items.indexOf(item);
+
+        if (idx >= 0) {
+            this.players[group][playerId].items.splice(idx, 1);
+        }
+    }
+
     takeItem(group, roomName, player, item) {
         this.checkGroup(group);
 
