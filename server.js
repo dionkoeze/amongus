@@ -252,10 +252,6 @@ for (const group of groups) {
                 console.error(e);
             }
         });
-
-        socket.on('reset', () => {
-            
-        });
     });
 }
 
