@@ -1,4 +1,3 @@
-const { start } = require('repl');
 const groups = require('./groups');
 
 const MAJORITY = 0.5;
@@ -72,10 +71,28 @@ class Engine {
     }
 
     resetGroup(group) {
+        this.checkGroup(group);
+
         this.players[group] = {};
         this.rooms[group] = [new Room('lobby')];
         this.playerCount[group] = 0;
         this.started[group] = false;
+    }
+
+    softResetGroup(group) {
+        this.checkGroup(group);
+
+        this.rooms[group] = [new Room('lobby')];
+        this.started[group] = false;
+
+        for (const player in this.players[group]) {
+            this.rooms[group][0].addPlayer(player);
+
+            this.players[group][player].items = [];
+            this.players[group][player].vote = "no one";
+            this.players[group][player].score = 0.0;
+            this.players[group][player].isImpostor = false;
+        }
     }
 
     checkGroup(group) {

@@ -2,11 +2,8 @@
 // voorbeeld: const socket = io('/A1');
 // standaard zit iedereen op example, als je niet in het eerste jaar zit, maar 
 // wel mee wil doen, gebruik dan een van de volgende namespaces: game1, game2, game3, game4, game5
-const socket = io('/example');
+const socket = io('https://onderons.herokuapp.com/example');
 
-socket.emit('new player item', 'test item');
-
-socket.on('vote info', console.log);
 
 // om het spel op te bouwen zetten we een aantal vaste kamers neer
 socket.emit('new room', 'elevator');
@@ -68,15 +65,14 @@ socket.emit('new start item', {
     item: 'wiretapping equipment',
 });
 
-// telkens wanneer een speler joint worden deze items ook toegevoegd
-socket.emit('new item', {
-    room: 'lobby',
-    item: 'notebook',
-});
+// telkens wanneer een speler joint worden deze items ook toegevoegd aan de room waar je begint: de lobby
 socket.emit('new item', {
     room: 'lobby',
     item: 'magnifying glass',
 });
+
+// we kunnen ook iedere speler die joint een item in de inventory geven
+socket.emit('new player item', 'notebook');
 
 
 // nu volgen een aantal event listeners die een bericht naar de server sturen
@@ -315,6 +311,14 @@ socket.on('score info', (scores) => {
         // voeg het nieuwe element in de DOM toe
         topThree.append(newElement);
     }
+});
+
+socket.on('vote info', (votes) => {
+    // onthoud alle relevante elements
+    const mostSus = document.getElementById('mostSus');
+
+    // zet de meest verdachte naam op de juiste plek
+    mostSus.innerText = votes[0].name;
 });
 
 // dit is hoe je een methode kan definieren in javascript

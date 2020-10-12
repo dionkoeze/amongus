@@ -8,6 +8,55 @@ const engine = new Engine;
 
 const groups = require('./groups');
 
+app.use(express.json());
+
+app.delete('/:group', (req, res) => {
+    console.log('yo');
+
+    const group = req.params.group;
+
+    if (group === 'B3' && req.body.passwd === process.env.PASSWD) {
+        try {
+            engine.checkGroup(group);
+            for (const room of engine.rooms[group]) {
+                for (const player of room.players) {
+                    const socket = io.sockets.connected(player)
+                    socket.leave(room.name);
+                    socket.join('lobby');
+                }
+            }
+
+            const ns = io.of(group);
+
+            engine.softResetGroup(group);
+            handleImpostorState(group, ns, engine.checkImpostorState(group));
+            
+            for (const id in ns.sockets) {
+                ns.to(id).emit('player info', engine.getPlayerInfo(group, id));
+            }
+
+            ns.to('lobby').emit('room info', engine.getRoomInfo(group, 'lobby'));
+            ns.emit('vote info', engine.getVoteInfo(group));
+
+            res.status(200).json({
+                success: true,
+                message: 'room is reset',
+            });
+        } catch(e) {
+            console.error(e);
+            res.status(500).json({
+                success: false,
+                message: 'request was correct, but internal server error',
+            });
+        }
+    } else {
+        res.status(400).json({
+            success: false,
+            message: 'request was incorrect',
+        });
+    }
+});
+
 app.use(express.static('static'));
 
 function handleImpostorState(group, ns, state) {
@@ -39,6 +88,7 @@ for (const group of groups) {
             ns.to('lobby').emit('room info', engine.getRoomInfo(group, 'lobby'));
             ns.to(socket.id).emit('player info', engine.getPlayerInfo(group, socket.id));
             ns.emit('score info', engine.getScoreInfo(group));
+            ns.to(socket.id).emit('vote info', engine.getVoteInfo(group));
         } catch (e) {
             console.error(e);
         }
@@ -181,6 +231,10 @@ for (const group of groups) {
             } catch (e) {
                 console.error(e);
             }
+        });
+
+        socket.on('reset', () => {
+            
         });
     });
 }
