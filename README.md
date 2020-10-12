@@ -36,7 +36,7 @@ Maakt een nieuwe kamer aan. Maakt niet uit als meerdere spelers dezelfde kamer a
 socket.emit('new room', 'room naam');
 ```
 
-### Verbindt twee kamers
+### Verbind twee kamers
 Na dit uit te voeren kan je van de ene naar de andere kamer en terug. Het maakt niet uit als je dit meerdere keren uitvoert, er komt maar 1 verbinding.
 ```js
 socket.emit('link rooms', {
