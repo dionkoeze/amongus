@@ -174,6 +174,15 @@ for (const group of groups) {
             }
         });
 
+        socket.on('kill', (player) => {
+            try {
+                const killedId = engine.killPlayer(group, player);
+                ns.to(killedId).emit('player info', engine.getPlayerInfo(group, killedId));
+            } catch (e) {
+                console.error(e);
+            }
+        });
+
         socket.on('leave item', (item) => {
             try {
                 const room = engine.getPlayerRoom(group, socket.id);

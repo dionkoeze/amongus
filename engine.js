@@ -36,6 +36,7 @@ class Player {
         this.vote = "no one";
         this.isImpostor = false;
         this.impostorSince = new Date();
+        this.isAlive = true;
     }
 
     setName(name) {
@@ -156,6 +157,16 @@ class Engine {
         return current;
     }
 
+    killPlayer(group, playerName) {
+        this.checkGroup(group);
+
+        for (const id in this.players[group]) {
+            if (this.players[group][id].name === playerName) {
+                this.players[group][id].isAlive = false;
+            }
+        }
+    }
+
     getPlayers(group, roomName) {
         this.checkGroup(group);
 
@@ -184,6 +195,7 @@ class Engine {
             score: player.score,
             vote: player.vote,
             impostor: player.isImpostor,
+            alive: player.isAlive,
         };
     }
 
