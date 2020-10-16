@@ -48,7 +48,13 @@ socket.emit('link rooms', {
 ### Naar een andere kamer gaan
 Hiermee ga jij naar een andere kamer.
 ```js
-socket.emit('move to', 'room naam')
+socket.emit('move to', 'room naam');
+```
+
+### Een speler vermoorden
+Hiermee vermoord je een speler.
+```js
+socket.emit('kill', 'player naam');
 ```
 
 ### Item uit je inventory achterlaten in een kamer
@@ -135,6 +141,7 @@ info = {
     score: 12.0,
     vote: 'andere speler naam',
     impostor: true, // dit geeft aan dat jij de impostor bent!
+    alive: true, // dit geeft aan of je nog leeft
 }
 ```
 
